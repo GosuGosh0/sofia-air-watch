@@ -14,7 +14,93 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      aqi_predictions: {
+        Row: {
+          confidence: number | null
+          created_at: string
+          factors: Json | null
+          id: string
+          predicted_aqi: number
+          prediction_time: string
+          station_id: string
+        }
+        Insert: {
+          confidence?: number | null
+          created_at?: string
+          factors?: Json | null
+          id?: string
+          predicted_aqi: number
+          prediction_time: string
+          station_id: string
+        }
+        Update: {
+          confidence?: number | null
+          created_at?: string
+          factors?: Json | null
+          id?: string
+          predicted_aqi?: number
+          prediction_time?: string
+          station_id?: string
+        }
+        Relationships: []
+      }
+      aqi_readings: {
+        Row: {
+          aqi: number
+          co: number | null
+          created_at: string
+          humidity: number | null
+          id: string
+          latitude: number
+          longitude: number
+          no2: number | null
+          o3: number | null
+          pm10: number | null
+          pm25: number | null
+          so2: number | null
+          station_id: string
+          station_name: string
+          temperature: number | null
+          timestamp: string
+        }
+        Insert: {
+          aqi: number
+          co?: number | null
+          created_at?: string
+          humidity?: number | null
+          id?: string
+          latitude: number
+          longitude: number
+          no2?: number | null
+          o3?: number | null
+          pm10?: number | null
+          pm25?: number | null
+          so2?: number | null
+          station_id: string
+          station_name: string
+          temperature?: number | null
+          timestamp?: string
+        }
+        Update: {
+          aqi?: number
+          co?: number | null
+          created_at?: string
+          humidity?: number | null
+          id?: string
+          latitude?: number
+          longitude?: number
+          no2?: number | null
+          o3?: number | null
+          pm10?: number | null
+          pm25?: number | null
+          so2?: number | null
+          station_id?: string
+          station_name?: string
+          temperature?: number | null
+          timestamp?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
