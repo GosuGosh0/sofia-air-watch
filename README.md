@@ -1,5 +1,8 @@
 # Welcome to your Lovable project
 
+
+ТОВА Е Visible prомяна която искам да видя, за да разбера че всичко работи
+
 ## Project info
 
 **URL**: https://lovable.dev/projects/1d1d25e2-c91c-49a1-9150-78fea4d7c222
