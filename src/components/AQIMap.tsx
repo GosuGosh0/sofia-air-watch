@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { useEffect, useState, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,35 +23,11 @@ function getAQIColor(aqi: number): string {
   return '#7e0023';
 }
 
-function createAQIIcon(aqi: string) {
-  const aqiNum = parseInt(aqi);
-  const displayValue = isNaN(aqiNum) ? '?' : aqi;
-  const color = getAQIColor(aqiNum);
-  
-  return L.divIcon({
-    className: 'custom-aqi-marker',
-    html: `<div style="
-      background-color: ${color};
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: bold;
-      font-size: 10px;
-      border: 2px solid white;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    ">${displayValue}</div>`,
-    iconSize: [32, 32],
-    iconAnchor: [16, 16],
-  });
-}
-
 export default function AQIMap() {
   const [stations, setStations] = useState<Station[]>([]);
   const [loading, setLoading] = useState(true);
+  const mapRef = useRef<L.Map | null>(null);
+  const mapContainerRef = useRef<HTMLDivElement>(null);
 
   const fetchStations = async () => {
     try {
@@ -77,6 +52,69 @@ export default function AQIMap() {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    if (loading || !mapContainerRef.current) return;
+    
+    // Initialize map only once
+    if (!mapRef.current) {
+      mapRef.current = L.map(mapContainerRef.current).setView([42.6977, 23.3219], 11);
+      
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      }).addTo(mapRef.current);
+    }
+
+    // Clear existing markers and add new ones
+    mapRef.current.eachLayer((layer) => {
+      if (layer instanceof L.Marker) {
+        mapRef.current?.removeLayer(layer);
+      }
+    });
+
+    stations.forEach((station) => {
+      const aqiNum = parseInt(station.aqi);
+      const displayValue = isNaN(aqiNum) ? '?' : station.aqi;
+      const color = getAQIColor(aqiNum);
+
+      const icon = L.divIcon({
+        className: 'custom-aqi-marker',
+        html: `<div style="
+          background-color: ${color};
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-weight: bold;
+          font-size: 10px;
+          border: 2px solid white;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        ">${displayValue}</div>`,
+        iconSize: [32, 32],
+        iconAnchor: [16, 16],
+      });
+
+      const marker = L.marker([station.lat, station.lon], { icon }).addTo(mapRef.current!);
+      marker.bindPopup(`
+        <div class="text-sm">
+          <div class="font-semibold">${station.station.name}</div>
+          <div class="text-lg font-bold" style="color: ${color}">
+            AQI: ${station.aqi === '-' ? 'N/A' : station.aqi}
+          </div>
+        </div>
+      `);
+    });
+
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
+  }, [loading, stations]);
+
   if (loading) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-background min-h-[300px]">
@@ -86,32 +124,10 @@ export default function AQIMap() {
   }
 
   return (
-    <MapContainer
-      center={[42.6977, 23.3219]}
-      zoom={11}
-      style={{ height: '100%', width: '100%', minHeight: '300px' }}
+    <div 
+      ref={mapContainerRef}
       className="rounded-lg"
-    >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      {stations.map((station) => (
-        <Marker
-          key={station.uid}
-          position={[station.lat, station.lon]}
-          icon={createAQIIcon(station.aqi)}
-        >
-          <Popup>
-            <div className="text-sm">
-              <div className="font-semibold">{station.station.name}</div>
-              <div className="text-lg font-bold" style={{ color: getAQIColor(parseInt(station.aqi)) }}>
-                AQI: {station.aqi === '-' ? 'N/A' : station.aqi}
-              </div>
-            </div>
-          </Popup>
-        </Marker>
-      ))}
-    </MapContainer>
+      style={{ height: '100%', width: '100%', minHeight: '300px' }}
+    />
   );
 }
