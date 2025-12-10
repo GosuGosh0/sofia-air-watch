@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Session } from "@supabase/supabase-js";
-import { Cloud, LogOut, Droplets, Wind, Thermometer, RefreshCw } from "lucide-react";
+import { Cloud, LogOut, Droplets, Wind, Thermometer, RefreshCw, Home } from "lucide-react";
+import { Link } from "react-router-dom";
 import AQIMap from "@/components/AQIMap";
 import AQIPredictionChart from "@/components/AQIPredictionChart";
 
@@ -130,6 +131,12 @@ export default function Dashboard() {
             <h1 className="text-xl font-bold text-foreground">AirWatch Sofia</h1>
           </div>
           <div className="flex items-center gap-2">
+            <Button asChild variant="outline" size="sm">
+              <Link to="/">
+                <Home className="mr-2 h-4 w-4" />
+                Home
+              </Link>
+            </Button>
             <Button onClick={refreshData} variant="outline" size="sm" disabled={fetching}>
               <RefreshCw className={`mr-2 h-4 w-4 ${fetching ? 'animate-spin' : ''}`} />
               Refresh
