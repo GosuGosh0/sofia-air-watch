@@ -34,7 +34,10 @@ serve(async (req) => {
     }
 
     if (!recentReadings || recentReadings.length === 0) {
-      throw new Error('No historical data available for prediction');
+      return new Response(
+        JSON.stringify({ error: 'No historical data available. Please refresh AQI data first.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     console.log(`Analyzing ${recentReadings.length} recent readings`);
