@@ -68,9 +68,18 @@ export default function AQIPredictionChart() {
   const generatePrediction = async () => {
     setGenerating(true);
     try {
-      const { error } = await supabase.functions.invoke('generate-aqi-prediction');
+      const { data, error } = await supabase.functions.invoke('generate-aqi-prediction');
       
       if (error) throw error;
+      
+      if (data?.error) {
+        toast({
+          title: 'Cannot generate predictions',
+          description: data.error,
+          variant: 'destructive',
+        });
+        return;
+      }
 
       toast({
         title: 'Predictions generated',
